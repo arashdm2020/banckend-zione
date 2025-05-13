@@ -80,6 +80,14 @@ func AutoMigrate() error {
 		&models.BlogCategory{},
 		&models.BlogMedia{},
 		&models.Tag{},
+		// Resume models
+		&models.PersonalInfo{},
+		&models.Skill{},
+		&models.Experience{},
+		&models.Education{},
+		&models.Certificate{},
+		&models.Language{},
+		&models.Publication{},
 	)
 }
 

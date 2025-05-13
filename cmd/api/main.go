@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,13 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"zionechainapi/configs"
+	"zionechainapi/internal/controllers"
+	"zionechainapi/internal/database"
+	"zionechainapi/internal/middleware"
 )
 
 // Define available routes for better documentation
@@ -69,93 +77,80 @@ var availableRoutes = []struct {
 }
 
 func main() {
-	// Define simple handlers
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			handleNotFound(w, r)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"message": "Zione API is running!"}`)
+	// Load configuration
+	config, err := configs.LoadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+
+	// Setup database connection
+	db, err := database.Connect(config)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	// Auto migrate the database
+	if err := database.AutoMigrate(); err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+
+	// Set Gin mode based on environment
+	if config.App.Env == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	// Initialize Gin router
+	router := gin.Default()
+
+	// Add basic middleware
+	router.Use(gin.Recovery())
+	router.Use(gin.Logger())
+
+	// Root endpoint
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Zione API is running!"})
 	})
 
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "OK"}`)
+	// Health check endpoint
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
 
-	// API routes handler
-	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		method := r.Method
-
-		// API welcome endpoint
-		if path == "/api" || path == "/api/" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Welcome to Zione API", "version": "1.0.0"}`)
-			return
-		}
-
-		// Auth endpoints
-		if strings.HasPrefix(path, "/api/auth/") {
-			if path == "/api/auth/login" && method == "POST" {
-				handleLogin(w, r)
-				return
-			}
-			if path == "/api/auth/register" && method == "POST" {
-				handleRegister(w, r)
-				return
-			}
-		}
-
-		// Projects endpoints
-		if strings.HasPrefix(path, "/api/projects") {
-			if path == "/api/projects" && method == "GET" {
-				handleGetProjects(w, r)
-				return
-			}
-			if path == "/api/projects" && method == "POST" {
-				handleCreateProject(w, r)
-				return
-			}
-		}
-
-		// Blog endpoints
-		if strings.HasPrefix(path, "/api/blog") {
-			if path == "/api/blog" && method == "GET" {
-				handleGetBlogPosts(w, r)
-				return
-			}
-			if path == "/api/blog" && method == "POST" {
-				handleCreateBlogPost(w, r)
-				return
-			}
-		}
-
-		// Categories endpoints
-		if strings.HasPrefix(path, "/api/categories/") {
-			if path == "/api/categories/projects" && method == "GET" {
-				handleGetProjectCategories(w, r)
-				return
-			}
-			if path == "/api/categories/blog" && method == "GET" {
-				handleGetBlogCategories(w, r)
-				return
-			}
-		}
-		
-		// Resume endpoints
-		if strings.HasPrefix(path, "/api/resume/") {
-			handleResumeRoutes(w, r)
-			return
-		}
-
-		// If we get here, route was not found
-		handleNotFound(w, r)
+	// API base group
+	api := router.Group("/api")
+	
+	// API welcome endpoint
+	api.GET("", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Welcome to Zione API",
+			"version": "1.0.0",
+		})
 	})
+
+	// Initialize controllers
+	authController := controllers.NewAuthController(config)
+	projectController := controllers.NewProjectController(config)
+	blogController := controllers.NewBlogController(config)
+	categoryController := controllers.NewCategoryController(config)
+	tagController := controllers.NewTagController(config)
+	
+	// Initialize resume controller with the database connection
+	resumeController := controllers.NewResumeController(db)
+
+	// Register auth routes (no middleware needed for these)
+	authController.Routes(api)
+	
+	// Create auth middleware for protected routes
+	authMiddleware := middleware.Auth(config)
+	
+	// Register controller routes that need auth for some endpoints
+	projectController.Routes(api, authMiddleware)
+	blogController.Routes(api, authMiddleware)
+	categoryController.Routes(api, authMiddleware)
+	tagController.Routes(api, authMiddleware)
+	
+	// Register resume routes
+	resumeController.Routes(api)
 
 	// Get port from environment or use default
 	port := os.Getenv("APP_PORT")
@@ -163,9 +158,10 @@ func main() {
 		port = "3000"
 	}
 
-	// Create server
+	// Create server with configured router
 	srv := &http.Server{
-		Addr: ":" + port,
+		Addr:    ":" + port,
+		Handler: router,
 	}
 
 	// Print available routes
@@ -195,264 +191,20 @@ func main() {
 	<-quit
 	
 	fmt.Println("Shutting down server...")
-}
-
-// Handler functions for each endpoint
-func handleNotFound(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, `{"error": "Not Found", "message": "The requested resource was not found"}`)
-}
-
-func handleLogin(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Login endpoint", "status": "Not implemented"}`)
-}
-
-func handleRegister(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Register endpoint", "status": "Not implemented"}`)
-}
-
-func handleGetProjects(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Get projects endpoint", "projects": []}`)
-}
-
-func handleCreateProject(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Create project endpoint", "status": "Not implemented"}`)
-}
-
-func handleGetBlogPosts(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Get blog posts endpoint", "posts": []}`)
-}
-
-func handleCreateBlogPost(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Create blog post endpoint", "status": "Not implemented"}`)
-}
-
-func handleGetProjectCategories(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Get project categories endpoint", "categories": []}`)
-}
-
-func handleGetBlogCategories(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"message": "Get blog categories endpoint", "categories": []}`)
-}
-
-// Resume related handlers
-func handleResumeRoutes(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	method := r.Method
 	
-	w.Header().Set("Content-Type", "application/json")
+	// Create context with timeout for shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	
-	// Personal info
-	if path == "/api/resume/personal" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Get personal info endpoint", "data": []}`)
-			return
-		} else if method == "POST" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{"message": "Create personal info endpoint", "status": "Not implemented"}`)
-			return
-		}
+	// Attempt graceful shutdown
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 	
-	if strings.HasPrefix(path, "/api/resume/personal/") {
-		if method == "PUT" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Update personal info endpoint", "status": "Not implemented"}`)
-			return
-		} else if method == "DELETE" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Delete personal info endpoint", "status": "Not implemented"}`)
-			return
-		}
+	// Close database connection
+	if err := database.Close(); err != nil {
+		log.Fatalf("Failed to close database connection: %v", err)
 	}
 	
-	// Skills
-	if path == "/api/resume/skills" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Get skills endpoint", "data": []}`)
-			return
-		} else if method == "POST" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{"message": "Create skill endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	if strings.HasPrefix(path, "/api/resume/skills/") {
-		if method == "PUT" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Update skill endpoint", "status": "Not implemented"}`)
-			return
-		} else if method == "DELETE" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Delete skill endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	// Experience
-	if path == "/api/resume/experience" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Get experience endpoint", "data": []}`)
-			return
-		} else if method == "POST" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{"message": "Create experience endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	if strings.HasPrefix(path, "/api/resume/experience/") {
-		if method == "PUT" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Update experience endpoint", "status": "Not implemented"}`)
-			return
-		} else if method == "DELETE" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Delete experience endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	// Education
-	if path == "/api/resume/education" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Get education endpoint", "data": []}`)
-			return
-		} else if method == "POST" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{"message": "Create education endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	if strings.HasPrefix(path, "/api/resume/education/") {
-		if method == "PUT" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Update education endpoint", "status": "Not implemented"}`)
-			return
-		} else if method == "DELETE" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Delete education endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	// Certificates
-	if path == "/api/resume/certificates" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Get certificates endpoint", "data": []}`)
-			return
-		} else if method == "POST" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{"message": "Create certificate endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	if strings.HasPrefix(path, "/api/resume/certificates/") {
-		if method == "PUT" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Update certificate endpoint", "status": "Not implemented"}`)
-			return
-		} else if method == "DELETE" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Delete certificate endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	// Languages
-	if path == "/api/resume/languages" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Get languages endpoint", "data": []}`)
-			return
-		} else if method == "POST" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{"message": "Create language endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	if strings.HasPrefix(path, "/api/resume/languages/") {
-		if method == "PUT" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Update language endpoint", "status": "Not implemented"}`)
-			return
-		} else if method == "DELETE" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Delete language endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	// Publications
-	if path == "/api/resume/publications" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Get publications endpoint", "data": []}`)
-			return
-		} else if method == "POST" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{"message": "Create publication endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	if strings.HasPrefix(path, "/api/resume/publications/") {
-		if method == "PUT" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Update publication endpoint", "status": "Not implemented"}`)
-			return
-		} else if method == "DELETE" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"message": "Delete publication endpoint", "status": "Not implemented"}`)
-			return
-		}
-	}
-	
-	// Complete resume
-	if path == "/api/resume/complete" {
-		if method == "GET" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{
-				"message": "Get complete resume endpoint",
-				"data": {
-					"personal_info": [],
-					"skills": [],
-					"experience": [],
-					"education": [],
-					"certificates": [],
-					"languages": [],
-					"publications": []
-				}
-			}`)
-			return
-		}
-	}
-	
-	handleNotFound(w, r)
+	fmt.Println("Server exited properly")
 } 
