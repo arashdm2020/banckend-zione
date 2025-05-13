@@ -1,6 +1,6 @@
 # Zione Backend API
 
-A production-grade RESTful API built with Go, Gin, MySQL, and GORM for the personal website zionechain.cfd.
+A production-grade RESTful API built with Go for the personal website zionechain.cfd.
 
 ## Features
 
@@ -33,46 +33,17 @@ The application follows standard Go project layout and clean architecture princi
 ## Tech Stack
 
 - **Language**: Go (Golang)
-- **Framework**: Gin
-- **Database**: MySQL
-- **ORM**: GORM
+- **Framework**: Standard HTTP package
 - **Authentication**: JWT
-- **Documentation**: Swagger via Swaggo
 
 ## Setup Instructions
 
 ### Prerequisites
 
 - Go 1.20+
-- Docker and Docker Compose (optional)
 - Make (optional)
 
 ### Local Development
-
-#### Option 1: Using Docker
-
-1. Clone or download the project
-   ```bash
-   # Download the project and navigate to the directory
-   cd zione-backend
-   ```
-
-2. Create `.env` file from example
-   ```bash
-   cp .env.example .env
-   # Edit the .env file with your preferred settings
-   ```
-
-3. Run the application with Docker Compose
-   ```bash
-   docker-compose up --build
-   ```
-
-4. Access the API at http://localhost:8080/api
-   
-5. Access Swagger documentation at http://localhost:8080/swagger/index.html
-
-#### Option 2: Without Docker
 
 1. Clone or download the project
    ```bash
@@ -101,31 +72,16 @@ The application follows standard Go project layout and clean architecture princi
 ```bash
 # Run unit tests
 go test ./internal/...
-
-# Run integration tests (requires Docker)
-docker-compose -f docker-compose.test.yml up --build
 ```
 
 ## API Endpoints
 
 | Method | Route                    | Description              | Access |
 | ------ | ------------------------ | ------------------------ | ------ |
-| POST   | /api/auth/login          | Login via phone/password | Public |
-| POST   | /api/auth/register       | Register new user        | Public |
-| GET    | /api/projects            | Get list of projects     | Public |
-| POST   | /api/projects            | Create project           | Admin  |
-| GET    | /api/blog                | Get blog posts           | Public |
-| POST   | /api/blog                | Create blog post         | Admin  |
-| GET    | /api/categories/projects | Get project categories   | Public |
-| GET    | /api/categories/blog     | Get blog categories      | Public |
-
-For a complete list of endpoints, refer to the Swagger documentation.
+| GET    | /                        | API status               | Public |
+| GET    | /health                  | Health check             | Public |
+| GET    | /api                     | API welcome              | Public |
 
 ## Deployment
 
-The application can be deployed using Docker Compose or any container orchestration platform like Kubernetes.
-
-```bash
-# Production deployment
-docker-compose -f docker-compose.prod.yml up -d
-``` 
+The application can be deployed to any Go-compatible hosting platform. 
