@@ -35,19 +35,24 @@ The application follows standard Go project layout and clean architecture princi
 - **Language**: Go (Golang)
 - **Framework**: Standard HTTP package
 - **Authentication**: JWT
+- **Database**: MySQL
 
 ## Setup Instructions
 
 ### Prerequisites
 
 - Go 1.20+
+- MySQL (for local database usage)
 - Make (optional)
 
-### Local Development
+## Local Development
+
+### Option 1: Running on Linux/MacOS
 
 1. Clone or download the project
    ```bash
    # Download the project and navigate to the directory
+   git clone https://github.com/arashdm2020/banckend-zione.git
    cd zione-backend
    ```
 
@@ -56,6 +61,11 @@ The application follows standard Go project layout and clean architecture princi
    # Example environment variables
    APP_ENV=development
    APP_PORT=3000
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_NAME=zione_db
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
    ```
 
 3. Run the application directly
@@ -67,12 +77,93 @@ The application follows standard Go project layout and clean architecture princi
    
 5. Access API welcome endpoint at http://localhost:3000/api
 
-### Running Tests
+### Option 2: Running on Windows
+
+1. Clone the repository
+   ```powershell
+   git clone https://github.com/arashdm2020/banckend-zione.git zione-backend
+   cd zione-backend
+   ```
+
+2. Create a batch file for running the application
+   ```batch
+   @echo off
+   :: Set environment variables
+   set APP_ENV=development
+   set APP_PORT=3000
+   set APP_HOST=localhost
+   set DB_HOST=localhost
+   set DB_PORT=3306
+   set DB_NAME=zione_db
+   set DB_USER=root
+   set DB_PASSWORD=your_password
+   set DB_CHARSET=utf8mb4
+
+   :: Run the application
+   go run cmd/api/main.go
+   ```
+   Save this as `run.bat` in the project root
+
+3. Install dependencies
+   ```powershell
+   go mod tidy
+   ```
+
+4. Run the application
+   ```powershell
+   .\run.bat
+   ```
+
+5. Access your API at http://localhost:3000/
+
+## Database Setup
+
+### MySQL Setup (Local Development)
+
+1. Install MySQL
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install mysql-server
+   
+   # MacOS with Homebrew
+   brew install mysql
+   ```
+
+2. Create a database and user
+   ```sql
+   CREATE DATABASE zione_db;
+   CREATE USER 'zione_user'@'localhost' IDENTIFIED BY 'your_password';
+   GRANT ALL PRIVILEGES ON zione_db.* TO 'zione_user'@'localhost';
+   FLUSH PRIVILEGES;
+   ```
+
+3. Update your `.env` or environment variables with your database credentials
+
+## Testing
+
+### Running Unit Tests
 
 ```bash
 # Run unit tests
 go test ./internal/...
 ```
+
+### API Testing
+
+You can test the API using various tools:
+
+1. **curl** from command line
+   ```bash
+   # Test the root endpoint
+   curl http://localhost:3000/
+   
+   # Test the API welcome endpoint
+   curl http://localhost:3000/api
+   ```
+
+2. **Postman**: Download from [postman.com](https://www.postman.com/downloads/)
+
+3. **Web Browser**: For GET requests, simply open the endpoints in your browser
 
 ## API Endpoints
 
@@ -92,4 +183,81 @@ go test ./internal/...
 
 ## Deployment
 
-The application can be deployed to any Go-compatible hosting platform. 
+### Shared Hosting Deployment
+
+1. SSH into your server
+   ```bash
+   ssh user@your-server -p port
+   ```
+
+2. Clone the repository in your www directory
+   ```bash
+   cd ~/www
+   mkdir zione-backend
+   cd zione-backend
+   git clone https://github.com/arashdm2020/banckend-zione.git .
+   ```
+
+3. Set up the database configuration
+   ```bash
+   nano start.sh
+   ```
+   Edit the database configuration with your hosting provider's database details
+
+4. Make all scripts executable
+   ```bash
+   chmod +x *.sh
+   ```
+
+5. Run the application
+   ```bash
+   # Build and run the compiled binary (recommended for production)
+   ./build.sh
+   ./run.sh
+   
+   # Or directly run the Go code
+   ./start.sh
+   ```
+
+6. Stop the application when needed
+   ```bash
+   ./stop.sh
+   ```
+
+7. Access your API at
+   ```
+   http://your-domain.com:port/
+   ```
+
+### Troubleshooting Deployment
+
+1. If you encounter line ending issues on Linux servers when uploading files from Windows:
+   ```bash
+   sed -i 's/\r$//' *.sh
+   ```
+
+2. If the port is already in use:
+   ```bash
+   # Check which process is using the port
+   lsof -i :port_number
+   
+   # Kill that process
+   kill -9 process_id
+   ```
+
+3. For viewing logs:
+   ```bash
+   tail -f app.log
+   ```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Commit your changes: `git commit -m 'Add feature'`
+4. Push to the branch: `git push origin feature-name`
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 
