@@ -734,6 +734,50 @@ You can test the API using various tools:
    tail -f app.log
    ```
 
+## Request Logging System
+
+The API includes a comprehensive request logging system that monitors and records all incoming HTTP requests. This helps with debugging, monitoring, and security auditing.
+
+### Logging Features
+
+- **Request Details**: HTTP method, path, query parameters, and body content
+- **Response Information**: Status code and success/error indication
+- **Performance Metrics**: Request processing time (latency)
+- **Client Data**: IP address and user agent
+- **Error Tracking**: Any errors that occurred during request processing
+
+### Log Storage
+
+Logs are stored in two locations:
+1. **Console Output**: All requests are logged to the console in real-time
+2. **Daily Log Files**: Logs are saved to files in the `logs/` directory, with one file per day (format: `YYYY-MM-DD.log`)
+
+### Log Format
+
+Each log entry uses the following format:
+```
+[REQUEST] YYYY/MM/DD - HH:MM:SS | Status | METHOD PATH | StatusCode | Latency | ClientIP | Parameters | User-Agent | Errors
+```
+
+Example:
+```
+[REQUEST] 2023/05/15 - 14:32:45 | Success | GET /api/resume/skills | 200 | 15.2ms | 192.168.1.5 | ?category=frontend | User-Agent: Mozilla/5.0... | 
+```
+
+For POST and PUT requests, the request body is included in the log (limited to 1KB to prevent log file bloat).
+
+### Accessing Logs
+
+To view the latest logs:
+```bash
+tail -f logs/$(date +%Y-%m-%d).log
+```
+
+To search logs for specific requests:
+```bash
+grep "GET /api/resume" logs/2023-05-15.log
+```
+
 ## Contributing
 
 1. Fork the repository

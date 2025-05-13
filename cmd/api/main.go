@@ -104,7 +104,7 @@ func main() {
 
 	// Add basic middleware
 	router.Use(gin.Recovery())
-	router.Use(gin.Logger())
+	router.Use(middleware.RequestLogger())
 
 	// Root endpoint
 	router.GET("/", func(c *gin.Context) {
