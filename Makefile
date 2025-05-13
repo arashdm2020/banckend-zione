@@ -1,11 +1,10 @@
- .PHONY: help build run dev test test-integration lint clean docker-build docker-run docker-dev swagger docs
+.PHONY: help build run dev test lint clean swagger docs
 
 # Variables
 GO=go
 BINARY_NAME=zione-api
 MAIN_FILE=cmd/api/main.go
 BUILD_DIR=build
-DOCKER_IMAGE_NAME=zione-api
 
 # Help
 help:
@@ -14,12 +13,8 @@ help:
 	@echo "  make run              - Run the application locally"
 	@echo "  make dev              - Run the application in development mode with hot reloading"
 	@echo "  make test             - Run unit tests"
-	@echo "  make test-integration - Run integration tests"
 	@echo "  make lint             - Run linters"
 	@echo "  make clean            - Clean build artifacts"
-	@echo "  make docker-build     - Build Docker image"
-	@echo "  make docker-run       - Run application in Docker"
-	@echo "  make docker-dev       - Run application in Docker with hot reloading"
 	@echo "  make swagger          - Generate Swagger documentation"
 	@echo "  make docs             - Generate API documentation"
 
@@ -39,10 +34,6 @@ dev:
 test:
 	$(GO) test -v ./internal/...
 
-# Run integration tests
-test-integration:
-	docker-compose -f docker-compose.test.yml up --build
-
 # Run linters
 lint:
 	golangci-lint run
@@ -52,22 +43,10 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf tmp
 
-# Build Docker image
-docker-build:
-	docker build -t $(DOCKER_IMAGE_NAME) .
-
-# Run application in Docker
-docker-run:
-	docker-compose up --build
-
-# Run application in Docker with hot reloading
-docker-dev:
-	docker-compose -f docker-compose.dev.yml up --build
-
 # Generate Swagger documentation
 swagger:
 	swag init -g cmd/api/main.go -o docs
 
 # Generate API documentation
 docs: swagger
-	@echo "API documentation generated at http://localhost:8080/swagger/index.html"
+	@echo "API documentation generated at http://localhost:3000/swagger/index.html"
