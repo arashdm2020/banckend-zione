@@ -61,23 +61,49 @@ Follow these steps to set up and test the Resume API:
    # Application settings
    APP_ENV=development
    APP_PORT=3000
-   APP_SECRET=your_secret_key
+   APP_HOST=0.0.0.0
+   APP_NAME=zione-backend
+   APP_URL=http://localhost:3000
+   APP_SECRET=your_secret_key_change_in_production
    
    # Database settings
    DB_HOST=localhost
    DB_PORT=3306
-   DB_USER=your_db_user
+   DB_NAME=zionec_db
+   DB_USER=zionec_user
    DB_PASSWORD=your_db_password
-   DB_NAME=zionechainapi
    DB_CHARSET=utf8mb4
    DB_MAX_IDLE_CONNS=10
    DB_MAX_OPEN_CONNS=100
-   DB_CONN_MAX_LIFETIME=1h
+   DB_CONN_MAX_LIFETIME=3600
+   
+   # JWT settings
+   JWT_SECRET=your_jwt_secret_change_in_production
+   JWT_ACCESS_TOKEN_EXPIRY=15m
+   JWT_REFRESH_TOKEN_EXPIRY=168h
+   
+   # CORS settings
+   CORS_ALLOWED_ORIGINS=http://localhost:3000,https://zionechain.cfd
+   CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,OPTIONS
+   CORS_ALLOWED_HEADERS=Origin,Content-Type,Accept,Authorization
+   
+   # Logging settings
+   LOG_LEVEL=info
+   LOG_FORMAT=json
+   
+   # TLS settings
+   TLS_ENABLED=false
+   TLS_CERT_FILE=./certs/server.crt
+   TLS_KEY_FILE=./certs/server.key
    ```
+   > Note: The `.env` file is excluded from Git. You should always create it locally and never commit it to version control.
 
 3. Create the database:
    ```sql
-   CREATE DATABASE zionechainapi CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE zionec_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE USER 'zionec_user'@'localhost' IDENTIFIED BY 'your_db_password';
+   GRANT ALL PRIVILEGES ON zionec_db.* TO 'zionec_user'@'localhost';
+   FLUSH PRIVILEGES;
    ```
 
 4. Install dependencies and run the application:
@@ -629,11 +655,35 @@ You can test the API using various tools:
    git clone https://github.com/arashdm2020/banckend-zione.git .
    ```
 
-3. Set up the database configuration
+3. Create a `.env` file with your database configuration
    ```bash
-   nano start.sh
+   nano .env
    ```
-   Edit the database configuration with your hosting provider's database details
+   
+   Add the following content (adjust values for your environment):
+   ```
+   # Application settings
+   APP_ENV=production
+   APP_PORT=3000
+   APP_HOST=0.0.0.0
+   APP_NAME=zione-backend
+   APP_URL=https://yourapi.example.com
+   APP_SECRET=your_secure_secret_key
+   
+   # Database settings
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_NAME=your_production_db
+   DB_USER=your_production_user
+   DB_PASSWORD=your_secure_password
+   DB_CHARSET=utf8mb4
+   DB_MAX_IDLE_CONNS=10
+   DB_MAX_OPEN_CONNS=100
+   DB_CONN_MAX_LIFETIME=3600
+   
+   # Other settings...
+   # (Copy from the Setup section above and adjust as needed)
+   ```
 
 4. Make all scripts executable
    ```bash

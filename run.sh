@@ -1,16 +1,13 @@
 #!/bin/bash
 cd ~/www/zione-backend
 
-# Database configuration
-export DB_HOST=localhost
-export DB_PORT=3306
-export DB_NAME=zionec_db
-export DB_USER=zionec_user
-export DB_PASSWORD=your_actual_password
-export DB_CHARSET=utf8mb4
-export DB_MAX_IDLE_CONNS=10
-export DB_MAX_OPEN_CONNS=100
-export DB_CONN_MAX_LIFETIME=3600
+# Check if .env file exists
+if [ ! -f .env ]; then
+  echo "Error: .env file not found!"
+  echo "Please create a .env file with your database configuration."
+  echo "See README.md for an example of the required contents."
+  exit 1
+fi
 
 # Run the application
 if [ -f bin/zione-api ]; then
