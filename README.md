@@ -44,10 +44,12 @@ The application follows standard Go project layout and clean architecture princi
 ### Prerequisites
 
 - Go 1.20+
-- Docker and Docker Compose
+- Docker and Docker Compose (optional)
 - Make (optional)
 
 ### Local Development
+
+#### Option 1: Using Docker
 
 1. Clone or download the project
    ```bash
@@ -70,13 +72,37 @@ The application follows standard Go project layout and clean architecture princi
    
 5. Access Swagger documentation at http://localhost:8080/swagger/index.html
 
+#### Option 2: Without Docker
+
+1. Clone or download the project
+   ```bash
+   # Download the project and navigate to the directory
+   cd zione-backend
+   ```
+
+2. Create `.env` file (optional, application uses default values if not provided)
+   ```bash
+   # Example environment variables
+   APP_ENV=development
+   APP_PORT=3000
+   ```
+
+3. Run the application directly
+   ```bash
+   go run cmd/api/main.go
+   ```
+
+4. Access the API at http://localhost:3000/
+   
+5. Access API welcome endpoint at http://localhost:3000/api
+
 ### Running Tests
 
 ```bash
 # Run unit tests
 go test ./internal/...
 
-# Run integration tests
+# Run integration tests (requires Docker)
 docker-compose -f docker-compose.test.yml up --build
 ```
 
