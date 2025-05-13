@@ -109,6 +109,10 @@ Follow these steps to set up and test the Resume API:
 4. Install dependencies and run the application:
    ```bash
    go mod download
+   ./start.sh
+   ```
+   Or run directly without using the script:
+   ```bash
    go run cmd/api/main.go
    ```
 
@@ -690,13 +694,12 @@ You can test the API using various tools:
    chmod +x *.sh
    ```
 
-5. Run the application
+5. Build and run the application
    ```bash
-   # Build and run the compiled binary (recommended for production)
+   # Build the application first
    ./build.sh
-   ./run.sh
    
-   # Or directly run the Go code
+   # Start the application (will use the binary if available, otherwise will use go run)
    ./start.sh
    ```
 

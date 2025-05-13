@@ -9,7 +9,15 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
-# Run with go run
-nohup go run cmd/api/main.go > app.log 2>&1 &
-echo $! > app.pid
-echo "Application started. PID: $(cat app.pid)" 
+# Check if binary exists and run it, otherwise run with go run
+if [ -f bin/zione-api ]; then
+  echo "Running compiled binary..."
+  nohup ./bin/zione-api > app.log 2>&1 &
+  echo $! > app.pid
+  echo "Application started. PID: $(cat app.pid)"
+else
+  echo "Binary not found. Running with 'go run'..."
+  nohup go run cmd/api/main.go > app.log 2>&1 &
+  echo $! > app.pid
+  echo "Application started. PID: $(cat app.pid)"
+fi 
