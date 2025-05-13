@@ -28,6 +28,44 @@ var availableRoutes = []struct {
 	{"POST", "/api/blog", "Create blog post", "Admin"},
 	{"GET", "/api/categories/projects", "Get project categories", "Public"},
 	{"GET", "/api/categories/blog", "Get blog categories", "Public"},
+	
+	// Resume endpoints
+	{"GET", "/api/resume/personal", "Get personal information", "Public"},
+	{"POST", "/api/resume/personal", "Create personal information", "Admin"},
+	{"PUT", "/api/resume/personal/:id", "Update personal information", "Admin"},
+	{"DELETE", "/api/resume/personal/:id", "Delete personal information", "Admin"},
+	
+	{"GET", "/api/resume/skills", "Get skills", "Public"},
+	{"POST", "/api/resume/skills", "Create skill", "Admin"},
+	{"PUT", "/api/resume/skills/:id", "Update skill", "Admin"},
+	{"DELETE", "/api/resume/skills/:id", "Delete skill", "Admin"},
+	
+	{"GET", "/api/resume/experience", "Get work experience", "Public"},
+	{"POST", "/api/resume/experience", "Create work experience", "Admin"},
+	{"PUT", "/api/resume/experience/:id", "Update work experience", "Admin"},
+	{"DELETE", "/api/resume/experience/:id", "Delete work experience", "Admin"},
+	
+	{"GET", "/api/resume/education", "Get education details", "Public"},
+	{"POST", "/api/resume/education", "Create education detail", "Admin"},
+	{"PUT", "/api/resume/education/:id", "Update education detail", "Admin"},
+	{"DELETE", "/api/resume/education/:id", "Delete education detail", "Admin"},
+	
+	{"GET", "/api/resume/certificates", "Get certificates", "Public"},
+	{"POST", "/api/resume/certificates", "Create certificate", "Admin"},
+	{"PUT", "/api/resume/certificates/:id", "Update certificate", "Admin"},
+	{"DELETE", "/api/resume/certificates/:id", "Delete certificate", "Admin"},
+	
+	{"GET", "/api/resume/languages", "Get languages", "Public"},
+	{"POST", "/api/resume/languages", "Create language", "Admin"},
+	{"PUT", "/api/resume/languages/:id", "Update language", "Admin"},
+	{"DELETE", "/api/resume/languages/:id", "Delete language", "Admin"},
+	
+	{"GET", "/api/resume/publications", "Get publications", "Public"},
+	{"POST", "/api/resume/publications", "Create publication", "Admin"},
+	{"PUT", "/api/resume/publications/:id", "Update publication", "Admin"},
+	{"DELETE", "/api/resume/publications/:id", "Delete publication", "Admin"},
+	
+	{"GET", "/api/resume/complete", "Get complete resume", "Public"},
 }
 
 func main() {
@@ -108,6 +146,12 @@ func main() {
 				return
 			}
 		}
+		
+		// Resume endpoints
+		if strings.HasPrefix(path, "/api/resume/") {
+			handleResumeRoutes(w, r)
+			return
+		}
 
 		// If we get here, route was not found
 		handleNotFound(w, r)
@@ -129,10 +173,10 @@ func main() {
 	fmt.Println("Server will start on http://localhost:" + port)
 	fmt.Println()
 	
-	fmt.Printf("%-7s %-30s %-35s %s\n", "Method", "Route", "Description", "Access")
-	fmt.Println(strings.Repeat("-", 80))
+	fmt.Printf("%-7s %-40s %-35s %s\n", "Method", "Route", "Description", "Access")
+	fmt.Println(strings.Repeat("-", 100))
 	for _, route := range availableRoutes {
-		fmt.Printf("%-7s %-30s %-35s %s\n", route.Method, "http://localhost:"+port+route.Path, route.Desc, route.Access)
+		fmt.Printf("%-7s %-40s %-35s %s\n", route.Method, "http://localhost:"+port+route.Path, route.Desc, route.Access)
 	}
 	fmt.Println("\nPress Ctrl+C to stop the server")
 	fmt.Println("=============================")
@@ -206,4 +250,209 @@ func handleGetBlogCategories(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `{"message": "Get blog categories endpoint", "categories": []}`)
+}
+
+// Resume related handlers
+func handleResumeRoutes(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	method := r.Method
+	
+	w.Header().Set("Content-Type", "application/json")
+	
+	// Personal info
+	if path == "/api/resume/personal" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Get personal info endpoint", "data": []}`)
+			return
+		} else if method == "POST" {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprintf(w, `{"message": "Create personal info endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	if strings.HasPrefix(path, "/api/resume/personal/") {
+		if method == "PUT" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Update personal info endpoint", "status": "Not implemented"}`)
+			return
+		} else if method == "DELETE" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Delete personal info endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	// Skills
+	if path == "/api/resume/skills" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Get skills endpoint", "data": []}`)
+			return
+		} else if method == "POST" {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprintf(w, `{"message": "Create skill endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	if strings.HasPrefix(path, "/api/resume/skills/") {
+		if method == "PUT" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Update skill endpoint", "status": "Not implemented"}`)
+			return
+		} else if method == "DELETE" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Delete skill endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	// Experience
+	if path == "/api/resume/experience" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Get experience endpoint", "data": []}`)
+			return
+		} else if method == "POST" {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprintf(w, `{"message": "Create experience endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	if strings.HasPrefix(path, "/api/resume/experience/") {
+		if method == "PUT" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Update experience endpoint", "status": "Not implemented"}`)
+			return
+		} else if method == "DELETE" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Delete experience endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	// Education
+	if path == "/api/resume/education" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Get education endpoint", "data": []}`)
+			return
+		} else if method == "POST" {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprintf(w, `{"message": "Create education endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	if strings.HasPrefix(path, "/api/resume/education/") {
+		if method == "PUT" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Update education endpoint", "status": "Not implemented"}`)
+			return
+		} else if method == "DELETE" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Delete education endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	// Certificates
+	if path == "/api/resume/certificates" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Get certificates endpoint", "data": []}`)
+			return
+		} else if method == "POST" {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprintf(w, `{"message": "Create certificate endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	if strings.HasPrefix(path, "/api/resume/certificates/") {
+		if method == "PUT" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Update certificate endpoint", "status": "Not implemented"}`)
+			return
+		} else if method == "DELETE" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Delete certificate endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	// Languages
+	if path == "/api/resume/languages" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Get languages endpoint", "data": []}`)
+			return
+		} else if method == "POST" {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprintf(w, `{"message": "Create language endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	if strings.HasPrefix(path, "/api/resume/languages/") {
+		if method == "PUT" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Update language endpoint", "status": "Not implemented"}`)
+			return
+		} else if method == "DELETE" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Delete language endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	// Publications
+	if path == "/api/resume/publications" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Get publications endpoint", "data": []}`)
+			return
+		} else if method == "POST" {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprintf(w, `{"message": "Create publication endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	if strings.HasPrefix(path, "/api/resume/publications/") {
+		if method == "PUT" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Update publication endpoint", "status": "Not implemented"}`)
+			return
+		} else if method == "DELETE" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"message": "Delete publication endpoint", "status": "Not implemented"}`)
+			return
+		}
+	}
+	
+	// Complete resume
+	if path == "/api/resume/complete" {
+		if method == "GET" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{
+				"message": "Get complete resume endpoint",
+				"data": {
+					"personal_info": [],
+					"skills": [],
+					"experience": [],
+					"education": [],
+					"certificates": [],
+					"languages": [],
+					"publications": []
+				}
+			}`)
+			return
+		}
+	}
+	
+	handleNotFound(w, r)
 } 

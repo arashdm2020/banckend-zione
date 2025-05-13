@@ -8,6 +8,7 @@ A production-grade RESTful API built with Go for the personal website zionechain
 - Project showcase with categories, tags, and media attachments
 - Blog system with categories, media support, and SEO-optimized structure
 - Admin panel functionality via API endpoints
+- Resume/Personal information management with detailed sections
 
 ## Architecture
 
@@ -167,19 +168,70 @@ You can test the API using various tools:
 
 ## API Endpoints
 
+### General Endpoints
+
 | Method | Route                     | Description              | Access |
 | ------ | ------------------------- | ------------------------ | ------ |
 | GET    | /                         | API status               | Public |
 | GET    | /health                   | Health check             | Public |
 | GET    | /api                      | API welcome              | Public |
+
+### Authentication Endpoints
+
+| Method | Route                     | Description              | Access |
+| ------ | ------------------------- | ------------------------ | ------ |
 | POST   | /api/auth/login           | Login via phone/password | Public |
 | POST   | /api/auth/register        | Register new user        | Public |
+
+### Project Endpoints
+
+| Method | Route                     | Description              | Access |
+| ------ | ------------------------- | ------------------------ | ------ |
 | GET    | /api/projects             | Get list of projects     | Public |
 | POST   | /api/projects             | Create project           | Admin  |
+
+### Blog Endpoints
+
+| Method | Route                     | Description              | Access |
+| ------ | ------------------------- | ------------------------ | ------ |
 | GET    | /api/blog                 | Get blog posts           | Public |
 | POST   | /api/blog                 | Create blog post         | Admin  |
 | GET    | /api/categories/projects  | Get project categories   | Public |
 | GET    | /api/categories/blog      | Get blog categories      | Public |
+
+### Resume Endpoints
+
+| Method | Route                         | Description                  | Access |
+| ------ | ----------------------------- | ---------------------------- | ------ |
+| GET    | /api/resume/personal          | Get personal information     | Public |
+| POST   | /api/resume/personal          | Create personal information  | Admin  |
+| PUT    | /api/resume/personal/:id      | Update personal information  | Admin  |
+| DELETE | /api/resume/personal/:id      | Delete personal information  | Admin  |
+| GET    | /api/resume/skills            | Get skills                   | Public |
+| POST   | /api/resume/skills            | Create skill                 | Admin  |
+| PUT    | /api/resume/skills/:id        | Update skill                 | Admin  |
+| DELETE | /api/resume/skills/:id        | Delete skill                 | Admin  |
+| GET    | /api/resume/experience        | Get work experience          | Public |
+| POST   | /api/resume/experience        | Create work experience       | Admin  |
+| PUT    | /api/resume/experience/:id    | Update work experience       | Admin  |
+| DELETE | /api/resume/experience/:id    | Delete work experience       | Admin  |
+| GET    | /api/resume/education         | Get education details        | Public |
+| POST   | /api/resume/education         | Create education detail      | Admin  |
+| PUT    | /api/resume/education/:id     | Update education detail      | Admin  |
+| DELETE | /api/resume/education/:id     | Delete education detail      | Admin  |
+| GET    | /api/resume/certificates      | Get certificates             | Public |
+| POST   | /api/resume/certificates      | Create certificate           | Admin  |
+| PUT    | /api/resume/certificates/:id  | Update certificate           | Admin  |
+| DELETE | /api/resume/certificates/:id  | Delete certificate           | Admin  |
+| GET    | /api/resume/languages         | Get languages                | Public |
+| POST   | /api/resume/languages         | Create language              | Admin  |
+| PUT    | /api/resume/languages/:id     | Update language              | Admin  |
+| DELETE | /api/resume/languages/:id     | Delete language              | Admin  |
+| GET    | /api/resume/publications      | Get publications             | Public |
+| POST   | /api/resume/publications      | Create publication           | Admin  |
+| PUT    | /api/resume/publications/:id  | Update publication           | Admin  |
+| DELETE | /api/resume/publications/:id  | Delete publication           | Admin  |
+| GET    | /api/resume/complete          | Get complete resume          | Public |
 
 ## Deployment
 
