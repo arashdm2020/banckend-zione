@@ -76,11 +76,19 @@ go test ./internal/...
 
 ## API Endpoints
 
-| Method | Route                    | Description              | Access |
-| ------ | ------------------------ | ------------------------ | ------ |
-| GET    | /                        | API status               | Public |
-| GET    | /health                  | Health check             | Public |
-| GET    | /api                     | API welcome              | Public |
+| Method | Route                     | Description              | Access |
+| ------ | ------------------------- | ------------------------ | ------ |
+| GET    | /                         | API status               | Public |
+| GET    | /health                   | Health check             | Public |
+| GET    | /api                      | API welcome              | Public |
+| POST   | /api/auth/login           | Login via phone/password | Public |
+| POST   | /api/auth/register        | Register new user        | Public |
+| GET    | /api/projects             | Get list of projects     | Public |
+| POST   | /api/projects             | Create project           | Admin  |
+| GET    | /api/blog                 | Get blog posts           | Public |
+| POST   | /api/blog                 | Create blog post         | Admin  |
+| GET    | /api/categories/projects  | Get project categories   | Public |
+| GET    | /api/categories/blog      | Get blog categories      | Public |
 
 ## Deployment
 
